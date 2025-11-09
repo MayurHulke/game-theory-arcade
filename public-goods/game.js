@@ -884,10 +884,25 @@ function displayInsights() {
     const ifAlwaysContributed10 = 100 + (10 * 10 * MULTIPLIER / 5) - 100; // Net from always contributing $10
     const contributionCost = gameState.totalContributed;
 
-    insightsGrid.innerHTML = `
+    // Calculate punishment statistics
+    const punishmentSpent = gameState.totalPunishmentSpent;
+    const punishmentReceived = gameState.totalPunishmentReceived;
+    const netPunishment = punishmentReceived - punishmentSpent;
+    const roundsPunished = gameState.punishmentHistory.filter(p => p.playerPunishmentReceived > 0).length;
+    const roundsYouPunished = gameState.punishmentHistory.filter(p => p.playerPunished.length > 0).length;
+
+    let insightsHTML = `
         <div class="insight-card">
             <h4>Your Pattern</h4>
             <p>Average contribution: $${avgContrib.toFixed(2)}. Ranged from $${minContrib} to $${maxContrib}. ${avgContrib < 5 ? 'You free-rode more than contributed.' : 'You supported the public good.'}</p>
+        </div>
+        <div class="insight-card">
+            <h4>Punishment Impact</h4>
+            <p>You spent $${punishmentSpent} punishing others and received $${punishmentReceived} in punishments. ${netPunishment > 0 ? `Net cost: $${netPunishment.toFixed(2)} - being a free-rider was expensive!` : netPunishment < 0 ? `You enforced norms while contributing, paying $${Math.abs(netPunishment).toFixed(2)} to maintain cooperation.` : 'You neither gained nor lost from punishment.'}</p>
+        </div>
+        <div class="insight-card">
+            <h4>Enforcement History</h4>
+            <p>You were punished in ${roundsPunished} out of 10 rounds. You punished others in ${roundsYouPunished} rounds. ${roundsPunished > 5 ? 'Frequent punishment signals low contribution - the group enforced norms against you.' : 'Rare punishment suggests you contributed fairly.'}</p>
         </div>
         <div class="insight-card">
             <h4>The Paradox</h4>
@@ -895,13 +910,19 @@ function displayInsights() {
         </div>
         <div class="insight-card">
             <h4>Your Wealth</h4>
-            <p>You ended with $${actualWealth.toFixed(2)}. If everyone (including you) always contributed $10, you'd have $200. The difference shows the cost of free-riding.</p>
+            <p>You ended with $${actualWealth.toFixed(2)}. If everyone (including you) always contributed $10, you'd have $200. The punishment system ${punishmentReceived > punishmentSpent ? 'penalized your free-riding' : 'allowed you to enforce cooperation'}, affecting your final wealth.</p>
+        </div>
+        <div class="insight-card">
+            <h4>Why Punishment Works</h4>
+            <p>Research by Fehr & Gächter showed punishment increases cooperation from ~40% to ~90%. Even costly punishment (you pay $1, they lose $3) sustains public goods. This explains why societies need enforcement - police, fines, reputation systems.</p>
         </div>
         <div class="insight-card">
             <h4>Real World</h4>
-            <p>Wikipedia, PBS, open-source software, climate action - all suffer from this. The math punishes contributors and rewards free-riders, so public goods underfunded.</p>
+            <p>Wikipedia, PBS, open-source software, climate action - all suffer from free-riding. Without enforcement (reputation, moderation, social pressure), public goods collapse. The math punishes contributors and rewards free-riders, so institutions add costly punishment to sustain cooperation.</p>
         </div>
     `;
+
+    insightsGrid.innerHTML = insightsHTML;
 }
 
 // Initialize game
