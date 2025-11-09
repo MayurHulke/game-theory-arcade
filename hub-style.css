@@ -133,28 +133,49 @@ body::after {
     box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
 }
 
-.stats-inline {
-    font-size: 0.5rem;
-    color: var(--text-secondary);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
+.global-stats h3 {
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
 }
 
-.stat-item {
-    color: var(--text-primary);
+.global-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
-.stat-item span {
+.global-stat {
+    padding: 0.8rem;
+    background: var(--bg-color);
+    border: 2px solid var(--primary-color);
+}
+
+.global-stat.highlight {
+    border-color: var(--warning-color);
+    background: rgba(255, 221, 0, 0.1);
+}
+
+.global-stat-value {
+    font-size: 1.2rem;
     color: var(--warning-color);
+    margin-bottom: 0.3rem;
     font-weight: bold;
 }
 
-.stat-separator {
-    color: var(--secondary-color);
-    opacity: 0.5;
+.global-stat-label {
+    font-size: 0.45rem;
+    color: var(--text-secondary);
+    line-height: 1.3;
+}
+
+.stats-tagline {
+    font-size: 0.55rem;
+    color: var(--primary-color);
+    font-style: italic;
+    margin-top: 0.8rem;
 }
 
 /* Key Insight Boxes */

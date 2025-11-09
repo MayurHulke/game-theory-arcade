@@ -26,15 +26,26 @@
 
         <!-- Global Statistics Section -->
         <div class="global-stats">
-            <div class="stats-inline">
-                <span class="stat-item"><span id="total-players">...</span> games played</span>
-                <span class="stat-separator">•</span>
-                <span class="stat-item"><span id="humans-cooperate">...</span> cooperate (theory: 0%)</span>
-                <span class="stat-separator">•</span>
-                <span class="stat-item"><span id="reject-unfair">...</span> reject unfair offers</span>
-                <span class="stat-separator">•</span>
-                <span class="stat-item"><span id="lakes-die">...</span> of lakes die</span>
+            <h3>🌍 What Real Players Do</h3>
+            <div class="global-stats-grid">
+                <div class="global-stat">
+                    <div class="global-stat-value" id="total-players">...</div>
+                    <div class="global-stat-label">Total Games Played</div>
+                </div>
+                <div class="global-stat highlight">
+                    <div class="global-stat-value" id="humans-cooperate">...</div>
+                    <div class="global-stat-label">Humans cooperate despite game theory predicting 0%</div>
+                </div>
+                <div class="global-stat">
+                    <div class="global-stat-value" id="reject-unfair">...</div>
+                    <div class="global-stat-label">Reject unfair offers even when it costs them money</div>
+                </div>
+                <div class="global-stat">
+                    <div class="global-stat-value" id="lakes-die">...</div>
+                    <div class="global-stat-label">Of shared resources die from overuse</div>
+                </div>
             </div>
+            <p class="stats-tagline">Are you more rational than the crowd? Or just as human?</p>
         </div>
 
         <div class="games-grid">
