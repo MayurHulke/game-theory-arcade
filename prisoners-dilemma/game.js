@@ -35,13 +35,22 @@ const OPPONENT_STRATEGIES = {
             const lastOpponentChoice = partnerChoices[partnerChoices.length - 1];
             const lastPlayerChoice = gameState.choices[gameState.currentRound - 2];
 
-            // If last round was mutual cooperation or I defected while they cooperated (I won), stay
-            if ((lastOpponentChoice === 'cooperate' && lastPlayerChoice === 'cooperate') ||
-                (lastOpponentChoice === 'cooperate' && lastPlayerChoice === 'defect')) {
-                return lastOpponentChoice;
+            // WSLS: Stay if good outcome, shift if bad outcome (from opponent's perspective)
+            if (lastOpponentChoice === 'cooperate') {
+                // Opponent cooperated last round
+                if (lastPlayerChoice === 'cooperate') {
+                    return 'cooperate'; // Mutual cooperation (1 year) - good outcome, STAY
+                } else {
+                    return 'defect'; // Player defected (20 years!) - bad outcome, SHIFT
+                }
+            } else {
+                // Opponent defected last round
+                if (lastPlayerChoice === 'cooperate') {
+                    return 'defect'; // Player cooperated (0 years!) - great outcome, STAY
+                } else {
+                    return 'cooperate'; // Mutual defection (5 years) - bad outcome, SHIFT
+                }
             }
-            // Otherwise shift
-            return lastOpponentChoice === 'cooperate' ? 'defect' : 'cooperate';
         }
     },
     'pavlov': {
