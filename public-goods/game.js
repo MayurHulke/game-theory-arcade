@@ -145,6 +145,7 @@ function updateRoundHeader() {
 function showDecisionView() {
     document.getElementById('decision-view').style.display = 'block';
     document.getElementById('result-view').style.display = 'none';
+    document.getElementById('transparency-view').style.display = 'none';
 
     const contribInput = document.getElementById('contribution-amount');
     contribInput.value = 5;
@@ -197,6 +198,7 @@ function handlePlayerContribution(playerContrib) {
     gameState.roundHistory.push({
         round: gameState.currentRound,
         playerContrib,
+        citizenContribs: citizenContribs,  // Store citizen contributions
         totalContrib,
         multipliedPool,
         sharePerPerson,
@@ -279,6 +281,11 @@ function showRoundResult(playerContrib, citizenContribs, totalContrib, multiplie
     // Update stats
     updateStats();
 
+    // View All Contributions button
+    document.getElementById('view-contributions-btn').onclick = () => {
+        showTransparencyView(playerContrib, citizenContribs);
+    };
+
     // Next round button
     document.getElementById('next-round-btn').onclick = () => {
         if (gameState.currentRound < gameState.totalRounds) {
@@ -288,6 +295,96 @@ function showRoundResult(playerContrib, citizenContribs, totalContrib, multiplie
             endGame();
         }
     };
+}
+
+// Show transparency view
+function showTransparencyView(playerContrib, citizenContribs) {
+    document.getElementById('result-view').style.display = 'none';
+    document.getElementById('transparency-view').style.display = 'block';
+
+    const contributionsTable = document.getElementById('contributions-table');
+
+    // Build contributions table
+    let tableHTML = '<div class="contrib-table">';
+
+    // Header
+    tableHTML += `
+        <div class="contrib-row contrib-header">
+            <div class="contrib-cell">Citizen</div>
+            <div class="contrib-cell">Contribution</div>
+            <div class="contrib-cell">Status</div>
+        </div>
+    `;
+
+    // Player row
+    const playerStatus = playerContrib >= 7 ? 'High Contributor' :
+                         playerContrib >= 4 ? 'Medium Contributor' :
+                         playerContrib >= 1 ? 'Low Contributor' : 'Free-Rider';
+    const playerColor = playerContrib >= 7 ? 'var(--success-color)' :
+                        playerContrib >= 4 ? 'var(--warning-color)' :
+                        'var(--danger-color)';
+
+    tableHTML += `
+        <div class="contrib-row">
+            <div class="contrib-cell"><strong>You (${gameState.playerName})</strong></div>
+            <div class="contrib-cell" style="color: ${playerColor}"><strong>$${playerContrib}</strong></div>
+            <div class="contrib-cell" style="color: ${playerColor}">${playerStatus}</div>
+        </div>
+    `;
+
+    // Citizen rows
+    citizenContribs.forEach(citizen => {
+        const status = citizen.amount >= 7 ? 'High Contributor' :
+                      citizen.amount >= 4 ? 'Medium Contributor' :
+                      citizen.amount >= 1 ? 'Low Contributor' : 'Free-Rider';
+        const color = citizen.amount >= 7 ? 'var(--success-color)' :
+                     citizen.amount >= 4 ? 'var(--warning-color)' :
+                     'var(--danger-color)';
+
+        tableHTML += `
+            <div class="contrib-row">
+                <div class="contrib-cell">${citizen.name}</div>
+                <div class="contrib-cell" style="color: ${color}">$${citizen.amount}</div>
+                <div class="contrib-cell" style="color: ${color}">${status}</div>
+            </div>
+        `;
+    });
+
+    tableHTML += '</div>';
+    contributionsTable.innerHTML = tableHTML;
+
+    // Generate insight about free-riding
+    const transparencyInsight = document.getElementById('transparency-insight');
+
+    // Count free-riders (contrib < $3)
+    let freeRiders = [];
+    if (playerContrib < 3) freeRiders.push('You');
+    citizenContribs.forEach(citizen => {
+        if (citizen.amount < 3) freeRiders.push(citizen.name);
+    });
+
+    let insightHTML = '<div class="transparency-insight-box">';
+
+    if (freeRiders.length === 0) {
+        insightHTML += `
+            <p style="color: var(--success-color);">✅ <strong>No free-riders this round!</strong></p>
+            <p>Everyone contributed at least $3. This is how public goods thrive!</p>
+        `;
+    } else if (freeRiders.length === 1) {
+        insightHTML += `
+            <p style="color: var(--warning-color);">⚠️ <strong>1 free-rider detected</strong></p>
+            <p>${freeRiders[0]} contributed less than $3 while benefiting from others' contributions.</p>
+        `;
+    } else {
+        insightHTML += `
+            <p style="color: var(--danger-color);">🚨 <strong>${freeRiders.length} free-riders detected</strong></p>
+            <p>${freeRiders.join(', ')} contributed less than $3 while benefiting from others' contributions.</p>
+            <p style="margin-top: 0.5rem;">This is the classic free-rider problem - people benefit without contributing!</p>
+        `;
+    }
+
+    insightHTML += '</div>';
+    transparencyInsight.innerHTML = insightHTML;
 }
 
 // Update citizens activity

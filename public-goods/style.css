@@ -703,6 +703,68 @@ input[type="number"] {
     gap: 1rem;
 }
 
+/* Transparency View */
+.transparency-view {
+    margin-top: 1.5rem;
+}
+
+.transparency-subtitle {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.contrib-table {
+    background: rgba(0, 217, 255, 0.05);
+    border: var(--pixel-border) solid var(--primary-color);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.contrib-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 2px solid rgba(0, 217, 255, 0.2);
+}
+
+.contrib-row:last-child {
+    border-bottom: none;
+}
+
+.contrib-header {
+    background: rgba(0, 217, 255, 0.15);
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 0.65rem;
+}
+
+.contrib-cell {
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+}
+
+.transparency-insight-box {
+    background: linear-gradient(135deg, rgba(255, 0, 85, 0.1) 0%, rgba(255, 221, 0, 0.1) 100%);
+    border: var(--pixel-border) solid var(--warning-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.transparency-insight-box p {
+    font-size: 0.65rem;
+    margin-bottom: 0.5rem;
+}
+
+.transparency-insight-box p:last-child {
+    margin-bottom: 0;
+}
+
 /* Footer */
 footer {
     margin-top: 4rem;

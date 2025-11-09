@@ -167,6 +167,22 @@
                         <div id="result-view" class="result-view" style="display: none;">
                             <h4>Round Result</h4>
                             <div class="result-content" id="result-content"></div>
+                            <button id="view-contributions-btn" class="btn btn-primary">View All Contributions</button>
+                        </div>
+
+                        <!-- Contribution Transparency View -->
+                        <div id="transparency-view" class="transparency-view" style="display: none;">
+                            <h4>💰 Community Contributions</h4>
+                            <p class="transparency-subtitle">See what everyone contributed this round:</p>
+
+                            <div class="contributions-table" id="contributions-table">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+
+                            <div class="transparency-insight" id="transparency-insight">
+                                <!-- Dynamic insight about free-riding -->
+                            </div>
+
                             <button id="next-round-btn" class="btn btn-primary">Next Round</button>
                         </div>
                     </div>
