@@ -43,6 +43,10 @@ Understanding these patterns isn't just academic - it explains why international
 ### Prisoner's Dilemma ✅
 Trust or betray? See how you compare to thousands of real players!
 
+<p align="center">
+  <img src="prisoners-dilemma/images/rick-morty.png" alt="Classic Prisoner's Dilemma" width="400">
+</p>
+
 **[Play Now →](https://mayurhulke.github.io/game-theory-arcade/prisoners-dilemma/)**
 
 - 10 rounds of strategic decision-making
