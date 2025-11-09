@@ -57,6 +57,10 @@ Trust or betray? See how you compare to thousands of real players!
 ### Ultimatum Game ✅
 Split $10 with a stranger. How fair will you be? How much unfairness will you tolerate?
 
+<p align="center">
+  <img src="images/ultimatum-game.png" alt="Ultimatum Game" width="400">
+</p>
+
 **[Play Now →](https://mayurhulke.github.io/game-theory-arcade/ultimatum-game/)**
 
 - 5 rounds alternating between proposer and responder roles
@@ -67,6 +71,10 @@ Split $10 with a stranger. How fair will you be? How much unfairness will you to
 
 ### Tragedy of the Commons ✅
 Fish from a shared lake. Will you be sustainable or grab what you can before others do?
+
+<p align="center">
+  <img src="images/tragedy-of-the-commons.png" alt="Tragedy of the Commons" width="400">
+</p>
 
 **[Play Now →](https://mayurhulke.github.io/game-theory-arcade/tragedy-commons/)**
 
@@ -79,6 +87,10 @@ Fish from a shared lake. Will you be sustainable or grab what you can before oth
 
 ### Public Goods Game ✅
 Contribute to the public fund or free-ride? See why Wikipedia needs donation drives.
+
+<p align="center">
+  <img src="images/public-goods-game.png" alt="Public Goods Game" width="400">
+</p>
 
 **[Play Now →](https://mayurhulke.github.io/game-theory-arcade/public-goods/)**
 
