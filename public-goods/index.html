@@ -185,6 +185,32 @@
 
                             <button id="next-round-btn" class="btn btn-primary">Next Round</button>
                         </div>
+
+                        <!-- Punishment View -->
+                        <div id="punishment-view" class="punishment-view" style="display: none;">
+                            <h4>⚖️ Punishment Phase</h4>
+                            <p class="punishment-subtitle">You can punish citizens who didn't contribute fairly. Costs you $1 per punishment, they lose $3.</p>
+
+                            <div id="punishment-options">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+
+                            <div class="punishment-actions">
+                                <button id="submit-punishment-btn" class="btn btn-primary">Apply Punishments</button>
+                                <button id="skip-punishment-btn" class="btn btn-secondary">Skip Punishment</button>
+                            </div>
+                        </div>
+
+                        <!-- Punishment Results View -->
+                        <div id="punishment-results-view" class="punishment-results-view" style="display: none;">
+                            <h4>⚖️ Punishment Results</h4>
+
+                            <div id="punishment-results-content">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+
+                            <button id="next-round-after-punishment-btn" class="btn btn-primary btn-large">Continue to Next Round</button>
+                        </div>
                     </div>
 
                     <div class="card citizens-card">
