@@ -433,15 +433,17 @@ async function saveGameData() {
             ? proposerOffers.reduce((a, b) => a + b, 0) / proposerOffers.length
             : 0;
 
+        // Determine player type based on average offer
+        let playerType = 'Maximizer';
+        if (avgOffer >= 5) playerType = 'Egalitarian';
+        else if (avgOffer >= 4) playerType = 'Fair-Minded';
+        else if (avgOffer >= 3) playerType = 'Strategic';
+        else if (avgOffer >= 2) playerType = 'Risk-Taker';
+
         const gameData = {
-            gameId: gameState.gameId,
-            playerName: gameState.playerName,
             timestamp: Date.now(),
-            totalEarnings: gameState.totalEarnings,
-            offers: gameState.offers,
-            responses: gameState.responses,
             averageOffer: avgOffer,
-            completed: true
+            playerType: playerType
         };
 
         const gameRef = ref(db, `ultimatum-games/${gameState.gameId}`);
