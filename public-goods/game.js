@@ -9,6 +9,9 @@ let gameState = {
     totalContributed: 0,
     contributions: [],
     roundHistory: [],
+    punishmentHistory: [],  // Track who got punished each round
+    totalPunishmentSpent: 0,  // Total $ spent on punishing
+    totalPunishmentReceived: 0,  // Total $ lost from being punished
     gameId: null
 };
 
@@ -23,6 +26,11 @@ const CITIZEN_STRATEGIES = {
 const MULTIPLIER = 2; // Public goods multiplier
 const NUM_CITIZENS = 4;
 const ENDOWMENT_PER_ROUND = 10;
+
+// Punishment parameters (Fehr & Gächter)
+const PUNISHMENT_COST = 1;        // Cost to punisher
+const PUNISHMENT_PENALTY = 3;     // Loss to punished (3:1 ratio)
+const FREE_RIDER_THRESHOLD = 3;   // Contrib < $3 = free-rider
 
 // Firebase references
 let db = null;
@@ -146,6 +154,8 @@ function showDecisionView() {
     document.getElementById('decision-view').style.display = 'block';
     document.getElementById('result-view').style.display = 'none';
     document.getElementById('transparency-view').style.display = 'none';
+    document.getElementById('punishment-view').style.display = 'none';
+    document.getElementById('punishment-results-view').style.display = 'none';
 
     const contribInput = document.getElementById('contribution-amount');
     contribInput.value = 5;
@@ -385,6 +395,237 @@ function showTransparencyView(playerContrib, citizenContribs) {
 
     insightHTML += '</div>';
     transparencyInsight.innerHTML = insightHTML;
+
+    // Next Round button triggers punishment phase
+    document.getElementById('next-round-btn').onclick = () => {
+        showPunishmentPhase(playerContrib, citizenContribs);
+    };
+}
+
+// Show punishment phase
+function showPunishmentPhase(playerContrib, citizenContribs) {
+    document.getElementById('transparency-view').style.display = 'none';
+    document.getElementById('punishment-view').style.display = 'block';
+
+    const punishmentOptions = document.getElementById('punishment-options');
+
+    // Build punishment options
+    let optionsHTML = '<div class="punishment-grid">';
+
+    // Add options to punish each citizen
+    citizenContribs.forEach((citizen, index) => {
+        const isFreeRider = citizen.amount < FREE_RIDER_THRESHOLD;
+        const borderColor = isFreeRider ? 'var(--danger-color)' : 'var(--success-color)';
+
+        optionsHTML += `
+            <div class="punishment-option" style="border-color: ${borderColor}">
+                <div class="punishment-option-header">
+                    <strong>${citizen.name}</strong>
+                    <span style="color: ${isFreeRider ? 'var(--danger-color)' : 'var(--success-color)'}">
+                        Contributed: $${citizen.amount}
+                    </span>
+                </div>
+                <div class="punishment-option-body">
+                    <label class="punishment-checkbox">
+                        <input type="checkbox" id="punish-${index}" data-citizen-name="${citizen.name}" data-citizen-contrib="${citizen.amount}">
+                        <span>Punish (Costs you $${PUNISHMENT_COST}, they lose $${PUNISHMENT_PENALTY})</span>
+                    </label>
+                </div>
+            </div>
+        `;
+    });
+
+    optionsHTML += '</div>';
+
+    optionsHTML += `
+        <div class="punishment-summary" id="punishment-summary">
+            <p>Selected: <span id="punishment-count">0</span> citizens | Cost: $<span id="punishment-total-cost">0</span></p>
+        </div>
+    `;
+
+    punishmentOptions.innerHTML = optionsHTML;
+
+    // Add event listeners to checkboxes
+    const checkboxes = document.querySelectorAll('.punishment-checkbox input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updatePunishmentSummary);
+    });
+
+    // Submit punishment button
+    document.getElementById('submit-punishment-btn').onclick = () => {
+        handlePlayerPunishment(citizenContribs);
+    };
+
+    // Skip punishment button
+    document.getElementById('skip-punishment-btn').onclick = () => {
+        handlePlayerPunishment(citizenContribs, true);
+    };
+}
+
+// Update punishment summary
+function updatePunishmentSummary() {
+    const checkboxes = document.querySelectorAll('.punishment-checkbox input[type="checkbox"]:checked');
+    const count = checkboxes.length;
+    const cost = count * PUNISHMENT_COST;
+
+    document.getElementById('punishment-count').textContent = count;
+    document.getElementById('punishment-total-cost').textContent = cost;
+}
+
+// Handle player punishment
+function handlePlayerPunishment(citizenContribs, skip = false) {
+    let playerPunishments = [];
+    let playerPunishmentCost = 0;
+
+    if (!skip) {
+        const checkboxes = document.querySelectorAll('.punishment-checkbox input[type="checkbox"]:checked');
+        checkboxes.forEach(checkbox => {
+            playerPunishments.push({
+                name: checkbox.dataset.citizenName,
+                contrib: parseInt(checkbox.dataset.citizenContrib)
+            });
+            playerPunishmentCost += PUNISHMENT_COST;
+        });
+    }
+
+    // Generate AI punishments
+    const aiPunishments = generateAIPunishments(citizenContribs, gameState.roundHistory[gameState.roundHistory.length - 1].playerContrib);
+
+    // Calculate punishment received by player
+    const playerPunishmentReceived = aiPunishments.playerPunished ? aiPunishments.playerPunishmentCount * PUNISHMENT_PENALTY : 0;
+
+    // Update game state
+    gameState.playerWealth -= playerPunishmentCost; // Cost of punishing others
+    gameState.playerWealth -= playerPunishmentReceived; // Penalty from being punished
+    gameState.totalPunishmentSpent += playerPunishmentCost;
+    gameState.totalPunishmentReceived += playerPunishmentReceived;
+
+    // Record punishment history
+    gameState.punishmentHistory.push({
+        round: gameState.currentRound,
+        playerPunished: playerPunishments,
+        playerPunishmentCost,
+        playerPunishmentReceived,
+        aiPunishments: aiPunishments.details
+    });
+
+    // Show punishment results
+    showPunishmentResults(playerPunishments, playerPunishmentCost, playerPunishmentReceived, aiPunishments);
+}
+
+// Generate AI punishments
+function generateAIPunishments(citizenContribs, playerContrib) {
+    const punishments = {
+        playerPunished: false,
+        playerPunishmentCount: 0,
+        details: []
+    };
+
+    // Check if player is a free-rider
+    const playerIsFreeRider = playerContrib < FREE_RIDER_THRESHOLD;
+
+    // AI citizens punish based on their contribution level
+    citizenContribs.forEach(citizen => {
+        let punishPlayer = false;
+
+        // High contributors (≥$7) punish free-riders 80% of the time
+        if (citizen.amount >= 7 && playerIsFreeRider) {
+            punishPlayer = Math.random() < 0.8;
+        }
+        // Medium contributors ($4-6) punish free-riders 50% of the time
+        else if (citizen.amount >= 4 && citizen.amount < 7 && playerIsFreeRider) {
+            punishPlayer = Math.random() < 0.5;
+        }
+        // Low contributors don't punish (they're part of the problem!)
+
+        if (punishPlayer) {
+            punishments.playerPunished = true;
+            punishments.playerPunishmentCount++;
+            punishments.details.push({
+                name: citizen.name,
+                punishedPlayer: true
+            });
+        }
+    });
+
+    return punishments;
+}
+
+// Show punishment results
+function showPunishmentResults(playerPunishments, playerPunishmentCost, playerPunishmentReceived, aiPunishments) {
+    document.getElementById('punishment-view').style.display = 'none';
+    document.getElementById('punishment-results-view').style.display = 'block';
+
+    const resultsContent = document.getElementById('punishment-results-content');
+
+    let resultsHTML = '<div class="punishment-results-content">';
+
+    // Player's punishments
+    if (playerPunishments.length > 0) {
+        resultsHTML += `
+            <div class="punishment-results-section">
+                <h4 style="color: var(--warning-color);">You Punished:</h4>
+                <ul>
+        `;
+        playerPunishments.forEach(p => {
+            resultsHTML += `<li>${p.name} (contributed $${p.contrib}) - Lost $${PUNISHMENT_PENALTY}</li>`;
+        });
+        resultsHTML += `
+                </ul>
+                <p style="margin-top: 0.5rem; color: var(--danger-color);">Your cost: -$${playerPunishmentCost}</p>
+            </div>
+        `;
+    } else {
+        resultsHTML += `
+            <div class="punishment-results-section">
+                <p style="color: var(--text-secondary);">You didn't punish anyone this round.</p>
+            </div>
+        `;
+    }
+
+    // Punishments received by player
+    if (aiPunishments.playerPunished) {
+        resultsHTML += `
+            <div class="punishment-results-section">
+                <h4 style="color: var(--danger-color);">You Were Punished:</h4>
+                <p>${aiPunishments.playerPunishmentCount} citizen(s) punished you for low contribution!</p>
+                <p style="margin-top: 0.5rem; color: var(--danger-color);">Your penalty: -$${playerPunishmentReceived}</p>
+            </div>
+        `;
+    } else {
+        resultsHTML += `
+            <div class="punishment-results-section">
+                <p style="color: var(--success-color);">✅ No one punished you this round!</p>
+            </div>
+        `;
+    }
+
+    // Net effect
+    const netEffect = -(playerPunishmentCost + playerPunishmentReceived);
+    resultsHTML += `
+        <div class="punishment-results-section punishment-net">
+            <h4>Net Punishment Effect:</h4>
+            <p style="color: ${netEffect < 0 ? 'var(--danger-color)' : 'var(--success-color)'}; font-size: 1.2rem;">
+                ${netEffect >= 0 ? '+' : ''}$${netEffect.toFixed(2)}
+            </p>
+        </div>
+    `;
+
+    resultsHTML += '</div>';
+    resultsContent.innerHTML = resultsHTML;
+
+    // Update stats display
+    updateStats();
+
+    // Next round button
+    document.getElementById('next-round-after-punishment-btn').onclick = () => {
+        if (gameState.currentRound < gameState.totalRounds) {
+            gameState.currentRound++;
+            startRound();
+        } else {
+            endGame();
+        }
+    };
 }
 
 // Update citizens activity
